@@ -19,32 +19,12 @@ struct SearchView: View {
 
     var body: some View {
         if isSearching {
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
-                TextField("Search", text: $viewModel.searchText)
-                    .textFieldStyle(.plain)
-                    .focused($searchFieldFocused)
-                    .submitLabel(.search)
-                    .onSubmit {
-                        Task {
-                            await viewModel.search()
-                            withAnimation {
-                                isSearching = false
-                            }
-                        }
-                    }
-                if !viewModel.searchText.isEmpty {
-                    Button { viewModel.searchText = "" } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.gray)
-                    }
+            SearchBar(text: $viewModel.searchText, focused: $searchFieldFocused) {
+                Task {
+                    await viewModel.search()
+                    withAnimation { isSearching = false }
                 }
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
-            .background(.regularMaterial, in: .capsule)
-            .padding(.horizontal, 10)
         }
         List(viewModel.displayedTracks) { item in
             SongRow(trackName: item.trackName,
@@ -53,30 +33,35 @@ struct SearchView: View {
                     hasMoreOptions: true) {
                 print("pegou o click")
             }
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    viewModel.didClickOnSong(item)
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                viewModel.didClickOnSong(item)
+            }
+            .onAppear {
+                if item.id == viewModel.findedMusics.last?.id {
+                    Task { await viewModel.nextPage() }
                 }
-                .onAppear {
-                    if item.id == viewModel.findedMusics.last?.id {
-                        Task { await viewModel.nextPage() }
-                    }
-                }
+            }
         }
+        .listStyle(.plain)
+        
         .navigationTitle("Songs")
         .navigationBarTitleDisplayMode(isSearching ? .large : .inline)
         .toolbar {
             if !isSearching {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Search", systemImage: "magnifyingglass") {
+                    Button {
                         isSearching = true
                         searchFieldFocused = true
+                    } label: {
+                        Image(symbol: .magnifyingglass)
                     }
                 }
             }
-        }.onAppear {
+        }
+        .onAppear {
             viewModel.loadRecents()
         }
     }

@@ -1,3 +1,11 @@
+//
+//  SearchBar.swift
+//  iTunesSearch
+//
+//  Created by Beatriz Ogioni on 25/05/26.
+//
+
+
 import SwiftUI
  
 struct SearchBar: View {

@@ -18,17 +18,25 @@ final class SearchViewModel {
     private var currentSearchText = ""
     private var currentPage = 0
     private var totalItens = 0
-    var searchText = ""
+    
     var findedMusics: [TrackItemModel] = []
     private(set) var recentTracks: [TrackItemModel] = []
-
-    var isLoading = false
+    private var searchTask: Task<Void, Never>?
+    
+    private var isLoading = false
     private var hasMore = true
     
     var displayedTracks: [TrackItemModel] {
         searchText.isEmpty ? recentTracks : findedMusics
     }
-
+    
+    var searchText = "" {
+        didSet {
+            guard searchText != oldValue else { return }
+            debounceSearch()
+        }
+    }
+    
     init(api: iTunesSearchAPI = iTunesSearchAPI(), context: ModelContext, router: Router) {
         self.api = api
         self.router = router
@@ -39,7 +47,16 @@ final class SearchViewModel {
         save(item)
         router.push(.playScreen(item))
     }
-
+    
+    private func debounceSearch() {
+        searchTask?.cancel()
+        searchTask = Task {
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            await search()
+        }
+    }
+    
     func loadRecents() {
         let descriptor = FetchDescriptor<TrackItemModel>(
             sortBy: [SortDescriptor(\.insertedAt, order: .reverse)]
@@ -52,56 +69,60 @@ final class SearchViewModel {
             // error
         }
     }
-
+    
     func save(_ item: TrackItemModel) {
         let id = String(item.id)
         let descriptor = FetchDescriptor<TrackItemModel>(
             predicate: #Predicate { $0.id == id }
         )
-
+        
         if let existing = try? context.fetch(descriptor).first {
             existing.insertedAt = .now
         } else {
             context.insert(item)
         }
-
+        
         try? context.save()
     }
     
     func search() async {
-        currentSearchText = searchText.addingPercentEncoding(
-            withAllowedCharacters: .urlQueryAllowed
-        ) ?? searchText
-
-        do {
-            let response = try await api.searchMusics(term: currentSearchText, page: currentPage)
-            totalItens = response.resultCount
-            let musics = response.results
-                 .filter { $0.kind == .song }
-                 .compactMap { TrackItemModel(from: $0) }
-             findedMusics.append(contentsOf: musics)
-        } catch {
-            print("Search error: \(error)")
+        guard !searchText.isEmpty else {
             findedMusics = []
+            return
         }
+        
+        currentPage = 0
+        findedMusics = []
+        await loadPage()
     }
     
     func nextPage() async {
-        guard !isLoading, hasMore else { return }
-           isLoading = true
-           defer { isLoading = false }
-
-           do {
-               currentPage += 1
-               let response = try await api.searchMusics(term: currentSearchText, page: currentPage)
-               let musics = response.results
-                    .filter { $0.kind == .song }
-                    .compactMap { TrackItemModel(from: $0) }
-               findedMusics.append(contentsOf: musics)
-               hasMore = currentPage * 20 < totalItens
-           } catch {
-               currentPage -= 1
-               // tratar/retry
-           }
+        guard !isLoading,
+              findedMusics.count < totalItens else { return }
+        currentPage += 1
+        await loadPage()
+    }
+    
+    private func loadPage() async {
+        guard !isLoading else { return }
+        isLoading = true
+        defer { isLoading = false }
+        
+        let term = searchText.addingPercentEncoding(
+            withAllowedCharacters: .urlQueryAllowed
+        ) ?? searchText
+        
+        do {
+            let response = try await api.searchMusics(term: term, page: currentPage)
+            totalItens = response.resultCount
+            
+            let musics = response.results
+                .filter { $0.kind == .song }
+                .compactMap { TrackItemModel(from: $0) }
+            
+            findedMusics.append(contentsOf: musics)
+        } catch {
+            print("Search error: \(error)")
+        }
     }
 }
