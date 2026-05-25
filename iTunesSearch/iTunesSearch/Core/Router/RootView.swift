@@ -29,8 +29,6 @@ struct RootView: View {
         }
         .sheet(item: $router.presentedSheet) { item in
             CollectionBottomSheet(track: item, router: router)
-                .presentationDetents([.height(150)])
-                .presentationDragIndicator(.visible)
         }
         .environment(router)
     }

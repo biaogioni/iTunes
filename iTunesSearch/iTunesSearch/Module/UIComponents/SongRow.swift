@@ -32,7 +32,7 @@ struct SongRow: View {
                 Text(trackName)
                     .font(.system(size: 16, weight: .medium))
                     .lineLimit(1)
-                    .foregroundStyle(Color.text3)
+                    .foregroundStyle(Color.text03)
                 Text(singer)
                     .font(.system(size: 12, weight: .regular))
                     .lineLimit(1)
@@ -43,7 +43,7 @@ struct SongRow: View {
                 Button {
                     moreOptionsClicked?()
                 } label: {
-                    Image(symbol: .ellipsis)
+                    Image(.ellipsis)
                         .foregroundStyle(Color.element3)
                         .frame(width: 20, height: 20)
                 }

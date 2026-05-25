@@ -16,7 +16,7 @@ struct SearchBar: View {
  
     var body: some View {
         HStack {
-            Image(symbol: .magnifyingglass)
+            Image(.magnifyingglass)
                 .foregroundStyle(.element25)
                 .padding(.leading, 18)
  
@@ -32,7 +32,7 @@ struct SearchBar: View {
                 Button {
                     text = ""
                 } label: {
-                    Image(symbol: .xmarkCircleFill)
+                    Image(.xmarkCircleFill)
                         .foregroundStyle(.element25)
                 }
                 .padding(.trailing, 18)

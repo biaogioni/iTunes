@@ -48,6 +48,10 @@ final class SearchViewModel {
         router.push(.playScreen(item))
     }
     
+    func didClickInMoreInfo(musicInfo: TrackItemModel) {
+        router.presentSheet(musicInfo)
+    }
+    
     private func debounceSearch() {
         searchTask?.cancel()
         searchTask = Task {

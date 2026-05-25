@@ -31,7 +31,7 @@ struct SearchView: View {
                     singer: item.singer,
                     coverURL: item.musicCover,
                     hasMoreOptions: true) {
-                print("pegou o click")
+                viewModel.didClickInMoreInfo(musicInfo: item)
             }
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
@@ -56,7 +56,7 @@ struct SearchView: View {
                         isSearching = true
                         searchFieldFocused = true
                     } label: {
-                        Image(symbol: .magnifyingglass)
+                        Image(.magnifyingglass)
                     }
                 }
             }

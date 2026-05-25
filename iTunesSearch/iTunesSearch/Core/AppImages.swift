@@ -1,5 +1,5 @@
 //
-//  SFSymbol.swift
+//  AppImages.swift
 //  iTunesSearch
 //
 //  Created by Beatriz Ogioni on 25/05/26.
@@ -21,8 +21,16 @@ enum SFSymbol: String {
     case xmarkCircleFill = "xmark.circle.fill"
 }
 
+enum AppImage: String {
+    case setlist = "iconSetlist"
+}
+
 extension Image {
-    init(symbol: SFSymbol) {
+    init(_ symbol: SFSymbol) {
         self.init(systemName: symbol.rawValue)
+    }
+    
+    init(_ asset: AppImage) {
+        self.init(asset.rawValue)
     }
 }

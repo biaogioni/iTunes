@@ -17,15 +17,19 @@ struct CollectionBottomSheet: View {
 
     var body: some View {
         VStack() {
-            Text(viewModel.track.trackName)
-                .font(.headline)
-            Text(viewModel.track.singer)
-                .font(.headline)
-
+            VStack(spacing: 6) {
+                Text(viewModel.track.trackName)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(.text03)
+                Text(viewModel.track.singer)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.text03)
+            }
+                .padding(16)
             AlbumDetailLabel()
+                .padding(.horizontal, 24)
         }
-        .padding()
-        .presentationDetents([.height(240)])
+        .presentationDetents([.height(140)])
         .presentationDragIndicator(.visible)
     }
 }
@@ -33,11 +37,13 @@ struct CollectionBottomSheet: View {
 struct AlbumDetailLabel: View {
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(.secondary)
-            Text("view album")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            Image(.setlist)
+                .frame(width: 24, height: 24)
+                .padding(.leading, 8)
+                .padding(.vertical, 16)
+            Text("View album")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(.text03)
             Spacer()
         }
     }
