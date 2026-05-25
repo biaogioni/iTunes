@@ -49,7 +49,10 @@ struct SearchView: View {
         List(viewModel.displayedTracks) { item in
             SongRow(trackName: item.trackName,
                     singer: item.singer,
-                    coverURL: item.musicCover)
+                    coverURL: item.musicCover,
+                    hasMoreOptions: true) {
+                print("pegou o click")
+            }
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
                 .contentShape(Rectangle())

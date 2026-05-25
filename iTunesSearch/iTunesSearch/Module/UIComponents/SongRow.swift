@@ -7,14 +7,16 @@
 
 import SwiftUI
 
-
 struct SongRow: View {
     let trackName: String
     let singer: String
     let coverURL: URL?
+    
+    let hasMoreOptions: Bool
+    let moreOptionsClicked: (() -> Void)?
 
     var body: some View {
-            HStack(spacing: 12) {
+            HStack(spacing: 16) {
                 AsyncImage(url: coverURL) { phase in
                     switch phase {
                     case .success(let image):
@@ -23,20 +25,30 @@ struct SongRow: View {
                         Rectangle().fill(.quaternary)
                     }
                 }
-                .frame(width: 50, height: 50)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .frame(width: 52, height: 52)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(trackName)
-                        .font(.body)
+                        .font(.system(size: 16, weight: .medium))
                         .lineLimit(1)
+                        .foregroundStyle(Color.text3)
                     Text(singer)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.system(size: 12, weight: .regular))
                         .lineLimit(1)
+                        .foregroundStyle(Color.text00)
                 }
                 Spacer(minLength: 0)
+                if hasMoreOptions {
+                    Button {
+                        moreOptionsClicked?()
+                    } label: {
+                        Image(symbol: .ellipsis)
+                            .foregroundStyle(Color.element3)
+                            .frame(width: 20, height: 20)
+                    }
+                    .buttonStyle(.borderless)
+                }
             }
-            .contentShape(Rectangle())
         }
 }
