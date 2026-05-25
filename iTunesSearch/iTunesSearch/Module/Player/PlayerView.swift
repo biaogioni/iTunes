@@ -10,7 +10,7 @@ import SwiftData
 struct PlayerView: View {
     @State private var viewModel: PlayerViewModel
     
-    init(musicInfo: ITunesItem, router: Router) {
+    init(musicInfo: TrackItemModel, router: Router) {
         _viewModel = State(wrappedValue: PlayerViewModel(musicInfo: musicInfo, router: router))
     }
  
@@ -58,7 +58,7 @@ struct PlayerView: View {
     }
  
     private var artwork: some View {
-        AsyncImage(url: viewModel.musicInfo.artworkUrl100) { phase in
+        AsyncImage(url: viewModel.musicInfo.musicCover) { phase in
             switch phase {
             case .success(let image):
                 image.resizable().scaledToFill()
@@ -76,12 +76,12 @@ struct PlayerView: View {
     private var trackInfo: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(viewModel.musicInfo.trackName ?? "")
+                Text(viewModel.musicInfo.trackName)
                     .font(.largeTitle.bold())
                     .foregroundStyle(.white)
                     .lineLimit(1)
  
-                Text(viewModel.musicInfo.artistName ?? "")
+                Text(viewModel.musicInfo.singer)
                     .font(.title3)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)

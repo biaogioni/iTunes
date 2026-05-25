@@ -7,12 +7,12 @@
 
 import Foundation
  
-struct ITunesSearchResponse: Codable {
+nonisolated struct ITunesSearchResponse: Codable {
     let resultCount: Int
     let results: [ITunesItem]
 }
 
-struct ITunesItem: Codable, Hashable {
+nonisolated struct ITunesItem: Codable, Hashable {
     let wrapperType: WrapperType?
     let kind: Kind?
  
@@ -118,7 +118,7 @@ extension ITunesItem {
 }
  
 extension ITunesItem {
-    var duration: TimeInterval? {
+    nonisolated var duration: TimeInterval? {
         trackTimeMillis.map { TimeInterval($0) / 1000 }
     }
     

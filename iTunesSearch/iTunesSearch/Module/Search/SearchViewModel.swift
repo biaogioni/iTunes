@@ -11,39 +11,61 @@ import SwiftData
 @MainActor
 @Observable
 final class SearchViewModel {
+    private let api: iTunesSearchAPI
+    private let router: Router
+    private let context: ModelContext
+    
     private var currentSearchText = ""
     private var currentPage = 0
     private var totalItens = 0
-    
     var searchText = ""
-    var results: [ITunesItem] = []
-    
+    var findedMusics: [TrackItemModel] = []
+    private(set) var recentTracks: [TrackItemModel] = []
+
     var isLoading = false
-    
     private var hasMore = true
     
-    private let api: iTunesSearchAPI
-    private let router: Router
+    var displayedTracks: [TrackItemModel] {
+        searchText.isEmpty ? recentTracks : findedMusics
+    }
 
-    init(api: iTunesSearchAPI = iTunesSearchAPI(), router: Router) {
+    init(api: iTunesSearchAPI = iTunesSearchAPI(), context: ModelContext, router: Router) {
         self.api = api
         self.router = router
+        self.context = context
     }
     
-    func buildMusicList() {
-        
-    }
-    
-    func didClickOnSong(_ item: ITunesItem, into context: ModelContext) {
-        save(item, into: context)
+    func didClickOnSong(_ item: TrackItemModel) {
+        save(item)
         router.push(.playScreen(item))
     }
 
-    private func save(_ item: ITunesItem, into context: ModelContext) {
-        guard let model = TracksItensModel(from: item) else {
-            return
+    func loadRecents() {
+        let descriptor = FetchDescriptor<TrackItemModel>(
+            sortBy: [SortDescriptor(\.insertedAt, order: .reverse)]
+        )
+        
+        do {
+            recentTracks = try context.fetch(descriptor)
+        } catch {
+            recentTracks = []
+            // error
         }
-        context.insert(model)
+    }
+
+    func save(_ item: TrackItemModel) {
+        let id = String(item.id)
+        let descriptor = FetchDescriptor<TrackItemModel>(
+            predicate: #Predicate { $0.id == id }
+        )
+
+        if let existing = try? context.fetch(descriptor).first {
+            existing.insertedAt = .now
+        } else {
+            context.insert(item)
+        }
+
+        try? context.save()
     }
     
     func search() async {
@@ -54,10 +76,13 @@ final class SearchViewModel {
         do {
             let response = try await api.searchMusics(term: currentSearchText, page: currentPage)
             totalItens = response.resultCount
-            results = response.results.filter { $0.kind == .song }
+            let musics = response.results
+                 .filter { $0.kind == .song }
+                 .compactMap { TrackItemModel(from: $0) }
+             findedMusics.append(contentsOf: musics)
         } catch {
             print("Search error: \(error)")
-            results = []
+            findedMusics = []
         }
     }
     
@@ -69,8 +94,10 @@ final class SearchViewModel {
            do {
                currentPage += 1
                let response = try await api.searchMusics(term: currentSearchText, page: currentPage)
-               let filtredResults = response.results.filter { $0.kind == .song }
-               results.append(contentsOf: filtredResults)
+               let musics = response.results
+                    .filter { $0.kind == .song }
+                    .compactMap { TrackItemModel(from: $0) }
+               findedMusics.append(contentsOf: musics)
                hasMore = currentPage * 20 < totalItens
            } catch {
                currentPage -= 1

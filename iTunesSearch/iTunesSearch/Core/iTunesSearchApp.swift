@@ -10,10 +10,20 @@ import SwiftData
 
 @main
 struct iTunesSearchApp: App {
+    let container: ModelContainer
+    
+    init() {
+        do {
+            container = try ModelContainer(for: TrackItemModel.self)
+        } catch {
+            fatalError("Fail on creating ModelContainer: \(error)")
+        }
+    }
+    
     var body: some Scene {
         WindowGroup {
-            RootView()  
+            RootView(context: container.mainContext)  
         }
-        .modelContainer(for: TracksItensModel.self)
+        .modelContainer(for: TrackItemModel.self)
     }
 }

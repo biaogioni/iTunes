@@ -6,13 +6,20 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct RootView: View {
     @State private var router = Router()
+    
+    private let context: ModelContext
+    
+    init(context: ModelContext) {
+        self.context = context
+    }
 
     var body: some View {
         NavigationStack(path: $router.path) {
-            SearchView(router: router)
+            SearchView(context: context, router: router)
                 .navigationDestination(for: Route.self) { route in
                     switch route {
                     case .playScreen(let item):

@@ -9,15 +9,12 @@ import SwiftUI
 import SwiftData
 
 struct SearchView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query(sort: \TracksItensModel.id) private var savedTracks: [TracksItensModel]
-    
     @State private var viewModel: SearchViewModel
     @State private var isSearching = true
     @FocusState private var searchFieldFocused: Bool
     
-    init(router: Router) {
-        _viewModel = State(wrappedValue: SearchViewModel(router: router))
+    init(context: ModelContext, router: Router) {
+        _viewModel = State(wrappedValue: SearchViewModel(context: context, router: router))
     }
 
     var body: some View {
@@ -49,21 +46,21 @@ struct SearchView: View {
             .background(.regularMaterial, in: .capsule)
             .padding(.horizontal, 10)
         }
-        List() {
-            if !viewModel.searchText.isEmpty {
-                ForEach(viewModel.results, id: \.trackId) { item in
-                    resultRow(item)
+        List(viewModel.displayedTracks) { item in
+            SongRow(trackName: item.trackName,
+                    singer: item.singer,
+                    coverURL: item.musicCover)
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    viewModel.didClickOnSong(item)
                 }
-            } else {
-                let _ = print("savedTracks count: \(savedTracks.count)")
-                ForEach(savedTracks) { track in
-                   SongRow(trackName: track.trackName,
-                           singer: track.singer,
-                           coverURL: track.musicCover)
-                       .listRowSeparator(.hidden)
-                       .listRowBackground(Color.clear)
-               }
-            }
+                .onAppear {
+                    if item.id == viewModel.findedMusics.last?.id {
+                        Task { await viewModel.nextPage() }
+                    }
+                }
         }
         .navigationTitle("Songs")
         .navigationBarTitleDisplayMode(isSearching ? .large : .inline)
@@ -76,24 +73,8 @@ struct SearchView: View {
                     }
                 }
             }
+        }.onAppear {
+            viewModel.loadRecents()
         }
-    }
-    
-    @ViewBuilder
-    private func resultRow(_ item: ITunesItem) -> some View {
-        SongRow(trackName: item.trackName ?? "",
-                singer: item.artistName ?? "",
-                coverURL: item.artworkUrl100)
-            .listRowSeparator(.hidden)
-            .listRowBackground(Color.clear)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                viewModel.didClickOnSong(item, into: modelContext)
-            }
-            .onAppear {
-                if item.trackId == viewModel.results.last?.trackId {
-                    Task { await viewModel.nextPage() }
-                }
-            }
     }
 }

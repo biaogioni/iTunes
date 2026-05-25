@@ -11,15 +11,15 @@ struct CollectionBottomSheet: View {
     @State private var viewModel: CollectionBottomSheetViewModel
     @Environment(\.dismiss) private var dismiss
 
-    init(track: ITunesItem, router: Router) {
+    init(track: TrackItemModel, router: Router) {
         _viewModel = State(wrappedValue: CollectionBottomSheetViewModel(track: track))
     }
 
     var body: some View {
         VStack() {
-            Text(viewModel.track.trackName ?? "")
+            Text(viewModel.track.trackName)
                 .font(.headline)
-            Text(viewModel.track.artistName ?? "")
+            Text(viewModel.track.singer)
                 .font(.headline)
 
             AlbumDetailLabel()

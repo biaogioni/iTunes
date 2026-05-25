@@ -13,7 +13,7 @@ import Observation
 @MainActor
 @Observable
 final class PlayerViewModel {
-    var musicInfo: ITunesItem
+    var musicInfo: TrackItemModel
     var currentTime: Double = 0
     var isPlaying = false
 
@@ -22,7 +22,7 @@ final class PlayerViewModel {
     private let api: iTunesSearchAPI
     private let router: Router
 
-    init(musicInfo: ITunesItem, api: iTunesSearchAPI = iTunesSearchAPI(), router: Router) {
+    init(musicInfo: TrackItemModel, api: iTunesSearchAPI = iTunesSearchAPI(), router: Router) {
         self.musicInfo = musicInfo
         self.api = api
         self.router = router
@@ -43,7 +43,7 @@ final class PlayerViewModel {
         router.presentSheet(musicInfo)
     }
     
-    func didClickOnSong(_ item: ITunesItem, into context: ModelContext) {
+    func didClickOnSong(_ item: TrackItemModel, into context: ModelContext) {
 //        save(item, into: context)
 //        router.push(.playScreen(item))
     }

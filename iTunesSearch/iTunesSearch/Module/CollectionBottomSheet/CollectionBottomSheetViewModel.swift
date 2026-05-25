@@ -9,9 +9,9 @@ import Foundation
 
 @Observable
 final class CollectionBottomSheetViewModel {
-    let track: ITunesItem
+    let track: TrackItemModel
     
-    init(track: ITunesItem) {
+    init(track: TrackItemModel) {
         self.track = track
     }
     

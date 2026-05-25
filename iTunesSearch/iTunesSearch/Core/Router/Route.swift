@@ -8,19 +8,19 @@
 import SwiftUI
 
 enum Route: Hashable {
-    case playScreen(ITunesItem)
+    case playScreen(TrackItemModel)
 }
 
 @Observable
 final class Router {
     var path = NavigationPath()
-    var presentedSheet: ITunesItem?
+    var presentedSheet: TrackItemModel?
 
     func push(_ route: Route) {
         path.append(route)
     }
     
-    func presentSheet(_ item: ITunesItem) {
+    func presentSheet(_ item: TrackItemModel) {
         presentedSheet = item
     }
 
