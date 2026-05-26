@@ -23,6 +23,7 @@ enum AppImage: String {
     case playOnRepeat = "ic-play-on-repeat"
     case forward = "ic-forward-bar-fill"
     case backward = "ic-backward-bar-fill"
+    case splashIcon = "ic-splash"
 }
 
 extension Image {

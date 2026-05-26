@@ -106,8 +106,7 @@ final class SearchViewModel {
     }
     
     func nextPage() async {
-        guard !isLoading,
-              findedMusics.count < totalItens else { return }
+        guard !isLoading, hasMore else { return }
         currentPage += 1
         await loadPage()
     }
@@ -130,6 +129,7 @@ final class SearchViewModel {
                 .compactMap { TrackItemModel(from: $0) }
             
             findedMusics.append(contentsOf: musics)
+            hasMore = response.resultCount == 20
         } catch {
             print("Search error: \(error)")
         }

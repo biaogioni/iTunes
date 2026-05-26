@@ -23,7 +23,7 @@ enum iTunesSearchAPIEndpoints {
     private var path: String {
         switch self {
         case let .search(page, term):
-            return "/search?term=\(term)&entity=song&media=music&limit=20&offset=\(page*20)"
+            return "/search?term=\(term)&entity=song&media=music&limit=\(page*20)"
         case let .lookup(collectionId):
             return "/lookup?id=\(collectionId)&entity=song"
         }

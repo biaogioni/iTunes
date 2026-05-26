@@ -10,6 +10,7 @@ import SwiftData
 
 struct RootView: View {
     @State private var router = Router()
+    @State private var isActive = false
     
     private let context: ModelContext
     
@@ -18,20 +19,28 @@ struct RootView: View {
     }
 
     var body: some View {
-        NavigationStack(path: $router.path) {
-            SearchView(context: context, router: router)
-                .navigationDestination(for: Route.self) { route in
-                    switch route {
-                    case .playScreen(let index, let musicPlaylist):
-                        PlayerView(currentMusicIndex: index, musicPlaylist: musicPlaylist, router: router)
-                    case .albumScreen(let item):
-                        AlbumView(musicReference: item, router: router)
+        if isActive {
+            NavigationStack(path: $router.path) {
+                SearchView(context: context, router: router)
+                    .navigationDestination(for: Route.self) { route in
+                        switch route {
+                        case .playScreen(let index, let musicPlaylist):
+                            PlayerView(currentMusicIndex: index, musicPlaylist: musicPlaylist, router: router)
+                        case .albumScreen(let item):
+                            AlbumView(musicReference: item, router: router)
+                        }
                     }
+            }
+            .sheet(item: $router.presentedSheet) { item in
+                CollectionBottomSheet(track: item, router: router)
+            }
+            .environment(router)
+        } else {
+            SplashView()
+                .task {
+                    try? await Task.sleep(for: .seconds(1.5))
+                    withAnimation { isActive = true }
                 }
         }
-        .sheet(item: $router.presentedSheet) { item in
-            CollectionBottomSheet(track: item, router: router)
-        }
-        .environment(router)
     }
 }
