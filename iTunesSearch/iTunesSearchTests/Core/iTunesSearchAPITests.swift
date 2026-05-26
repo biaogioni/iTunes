@@ -13,11 +13,11 @@ import Testing
 @Suite("Endpoints")
 struct EndpointTests {
     @Test func searchURL() {
-        #expect(iTunesSearchAPIEndpoints.search(page: 3, term: "beatles").endpoint
+        #expect(iTunesSearchAPIEndpoints.search(page: 3, term: "beatles").url?.absoluteString
             == "https://itunes.apple.com/search?term=beatles&entity=song&media=music&limit=60")
     }
     @Test func lookupURL() {
-        #expect(iTunesSearchAPIEndpoints.lookup(collectionId: "42").endpoint
+        #expect(iTunesSearchAPIEndpoints.lookup(collectionId: "42").url?.absoluteString
             == "https://itunes.apple.com/lookup?id=42&entity=song")
     }
 }

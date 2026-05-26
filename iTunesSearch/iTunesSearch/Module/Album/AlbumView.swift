@@ -50,9 +50,7 @@ struct AlbumView: View {
         .listStyle(.plain)
         .errorAlert(isPresented: $viewModel.showErrorAlert)
         .task {
-            Task {
-                await viewModel.loadAlbum()
-            }
+            await viewModel.loadAlbum()
         }
     }
 }

@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-class TrackItemModel {
+final class TrackItemModel {
     @Attribute(.unique) var id: String
     var trackName: String
     var singer: String

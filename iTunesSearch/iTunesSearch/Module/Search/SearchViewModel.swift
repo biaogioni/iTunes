@@ -128,12 +128,8 @@ final class SearchViewModel {
         isLoading = true
         defer { isLoading = false }
         
-        let term = searchText.addingPercentEncoding(
-            withAllowedCharacters: .urlQueryAllowed
-        ) ?? searchText
-        
         do {
-            let response = try await api.searchMusics(term: term, page: currentPage)
+            let response = try await api.searchMusics(term: searchText, page: currentPage)
             let musics = response.items
             findedMusics.append(contentsOf: musics)
             hasMore = response.hasMore

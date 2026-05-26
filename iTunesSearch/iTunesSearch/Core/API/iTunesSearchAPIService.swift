@@ -15,28 +15,47 @@ protocol iTunesSearchAPIServicing {
 enum iTunesSearchAPIEndpoints {
     case search(page: Int, term: String)
     case lookup(collectionId: String)
-    
-    private var baseEndpoint: String {
-        return "https://itunes.apple.com"
-    }
-    
+
     private var path: String {
         switch self {
-        case let .search(page, term):
-            return "/search?term=\(term)&entity=song&media=music&limit=\(page*20)"
-        case let .lookup(collectionId):
-            return "/lookup?id=\(collectionId)&entity=song"
+        case .search:  return "/search"
+        case .lookup:  return "/lookup"
         }
     }
-    
-    var endpoint: String {
-        return "\(baseEndpoint)\(path)"
+
+    private var queryItems: [URLQueryItem] {
+        switch self {
+        case let .search(page, term):
+            return [
+                URLQueryItem(name: "term", value: term),
+                URLQueryItem(name: "entity", value: "song"),
+                URLQueryItem(name: "media", value: "music"),
+                URLQueryItem(name: "limit", value: "\(page * 20)")
+            ]
+        case let .lookup(collectionId):
+            return [
+                URLQueryItem(name: "id", value: collectionId),
+                URLQueryItem(name: "entity", value: "song")
+            ]
+        }
+    }
+
+    var url: URL? {
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "itunes.apple.com"
+        components.path = path
+        components.queryItems = queryItems
+        return components.url
     }
 }
 
 nonisolated struct iTunesSearchAPI: iTunesSearchAPIServicing {
     private let urlSession: URLSession
 
+    private static let pageSize = 20
+    private static let maxResults = 200
+    
     init(urlSession: URLSession = .shared) {
         self.urlSession = urlSession
     }
@@ -45,40 +64,48 @@ nonisolated struct iTunesSearchAPI: iTunesSearchAPIServicing {
     // I opted to implement fake pagination in the service layer – this way,
     // it's not necessary to make code changes in case of switching to another API.
     func searchMusics(term: String, page: Int) async throws -> PagedResult<TrackItemModel> {
-        let urlString = iTunesSearchAPIEndpoints.search(page: page, term: term)
-        let response: ITunesSearchResponse = try await makeGetRequest(requestUrl: urlString.endpoint)
-
+        let limit = Self.pageSize * page
+        let response: ITunesSearchResponse = try await makeGetRequest(
+            endpoint: .search(page: page, term: term)
+        )
+        
         let all = response.results.compactMap(TrackItemModel.init)
-        let pageSize = 20
-        let limit = pageSize * page
-        let newItems = Array(all.dropFirst((page - 1) * pageSize))
-        let hasMore = all.count == limit && limit < 200
-
+        let newItems = Array(all.dropFirst((page - 1) * Self.pageSize))
+        let hasMore = all.count >= limit && limit < Self.maxResults
+        
         return PagedResult(items: newItems, hasMore: hasMore)
     }
     
     func lookupAlbum(collectionId: String) async throws -> [TrackItemModel] {
-        let urlString = iTunesSearchAPIEndpoints.lookup(collectionId: collectionId)
-        let response: ITunesSearchResponse = try await makeGetRequest(requestUrl: urlString.endpoint)
+        let response: ITunesSearchResponse = try await makeGetRequest(
+            endpoint: .lookup(collectionId: collectionId)
+        )
         return response.results
             .filter { $0.wrapperType == .track && $0.kind == .song }
             .compactMap(TrackItemModel.init)
     }
     
-    private func makeGetRequest<T: Decodable>(requestUrl: String) async throws -> T {
-        guard let url = URL(string: requestUrl) else {
+    private func makeGetRequest<T: Decodable>(endpoint: iTunesSearchAPIEndpoints) async throws -> T {
+        guard let url = await endpoint.url else {
             throw URLError(.badURL)
         }
-
-        let (data, _) = try await urlSession.data(from: url)
-
+        
+        let (data, response) = try await urlSession.data(from: url)
+        
+        guard let http = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+        
+        guard (200..<300).contains(http.statusCode) else {
+            throw URLError(.badServerResponse)
+        }
+        
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-
+        
         do {
             return try decoder.decode(T.self, from: data)
         } catch {
-            print("Decoding Error: \(error)")
             throw error
         }
     }

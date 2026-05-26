@@ -26,7 +26,6 @@ final class PlayerViewModel {
 
     private var player: AVPlayer?
     
-    private let api: iTunesSearchAPI
     private let router: Routing
     
     var playingMusic: TrackItemModel?
@@ -46,11 +45,10 @@ final class PlayerViewModel {
     
     var isRepeating: Bool = false
     
-    init(currentMusicIndex: Int, musicPlaylist: [TrackItemModel], api: iTunesSearchAPI = iTunesSearchAPI(), router: Routing) {
+    init(currentMusicIndex: Int, musicPlaylist: [TrackItemModel], router: Routing) {
         self.currentMusicIndex = currentMusicIndex
         self.musicPlaylist = musicPlaylist
         self.playingMusic = musicPlaylist[safe: currentMusicIndex]
-        self.api = api
         self.router = router
     }
     

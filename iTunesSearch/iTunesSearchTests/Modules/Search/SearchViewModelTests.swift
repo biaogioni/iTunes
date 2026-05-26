@@ -102,13 +102,6 @@ struct SearchTests {
         #expect(api.searchCalls.last?.page == 1)
     }
 
-    @Test func percentEncodesTerm() async throws {
-        let (vm, api, _, _) = try makeSUT()
-        vm.searchText = "foo fighters"
-        await vm.search()
-        #expect(api.searchCalls.last?.term == "foo%20fighters")
-    }
-
     @Test func errorSetsAlert() async throws {
         let (vm, api, _, _) = try makeSUT()
         api.searchResult = .failure(DummyError())
