@@ -35,8 +35,7 @@ final class AlbumViewModel {
         defer { isLoading = false }
         
         do {
-            let response = try await api.lookupAlbum(collectionId: String(collectionId))
-            albumSongs = response.results.compactMap { TrackItemModel(from: $0) }
+            albumSongs = try await api.lookupAlbum(collectionId: String(collectionId))
         } catch {
             print("api error: \(error)")
         }

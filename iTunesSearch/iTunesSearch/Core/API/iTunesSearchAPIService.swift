@@ -8,8 +8,8 @@
 import Foundation
 
 protocol iTunesSearchAPIServicing {
-    func searchMusics(term: String, page: Int) async throws -> ITunesSearchResponse
-    func lookupAlbum(collectionId: String) async throws -> ITunesSearchResponse
+    func searchMusics(term: String, page: Int) async throws -> PagedResult<TrackItemModel>
+    func lookupAlbum(collectionId: String) async throws -> [TrackItemModel]
 }
 
 enum iTunesSearchAPIEndpoints {
@@ -41,14 +41,26 @@ nonisolated struct iTunesSearchAPI: iTunesSearchAPIServicing {
         self.urlSession = urlSession
     }
     
-    func searchMusics(term: String, page: Int) async throws -> ITunesSearchResponse {
+    // That API doesn't support pagination.
+    // I opted to implement fake pagination in the service layer – this way,
+    // it's not necessary to make code changes in case of switching to another API.
+    func searchMusics(term: String, page: Int) async throws -> PagedResult<TrackItemModel> {
         let urlString = iTunesSearchAPIEndpoints.search(page: page, term: term)
-        return try await makeGetRequest(requestUrl: urlString.endpoint)
+        let response: ITunesSearchResponse = try await makeGetRequest(requestUrl: urlString.endpoint)
+
+        let all = response.results.compactMap(TrackItemModel.init)
+        let pageSize = 20
+        let limit = pageSize * page
+        let newItems = Array(all.dropFirst((page - 1) * pageSize))
+        let hasMore = all.count == limit && limit < 200
+
+        return PagedResult(items: newItems, hasMore: hasMore)
     }
     
-    func lookupAlbum(collectionId: String) async throws -> ITunesSearchResponse {
+    func lookupAlbum(collectionId: String) async throws -> [TrackItemModel] {
         let urlString = iTunesSearchAPIEndpoints.lookup(collectionId: collectionId)
-        return try await makeGetRequest(requestUrl: urlString.endpoint)
+        let response: ITunesSearchResponse = try await makeGetRequest(requestUrl: urlString.endpoint)
+        return response.results.compactMap(TrackItemModel.init)
     }
     
     private func makeGetRequest<T: Decodable>(requestUrl: String) async throws -> T {

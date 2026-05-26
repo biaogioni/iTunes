@@ -16,8 +16,7 @@ final class SearchViewModel {
     private let context: ModelContext
     
     private var currentSearchText = ""
-    private var currentPage = 0
-    private var totalItens = 0
+    private var currentPage = 1
     
     var findedMusics: [TrackItemModel] = []
     private(set) var recentTracks: [TrackItemModel] = []
@@ -100,7 +99,7 @@ final class SearchViewModel {
             return
         }
         
-        currentPage = 0
+        currentPage = 1
         findedMusics = []
         await loadPage()
     }
@@ -122,14 +121,9 @@ final class SearchViewModel {
         
         do {
             let response = try await api.searchMusics(term: term, page: currentPage)
-            totalItens = response.resultCount
-            
-            let musics = response.results
-                .filter { $0.kind == .song }
-                .compactMap { TrackItemModel(from: $0) }
-            
+            let musics = response.items
             findedMusics.append(contentsOf: musics)
-            hasMore = response.resultCount == 20
+            hasMore = response.hasMore
         } catch {
             print("Search error: \(error)")
         }

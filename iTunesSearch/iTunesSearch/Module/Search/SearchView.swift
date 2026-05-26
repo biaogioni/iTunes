@@ -45,7 +45,9 @@ struct SearchView: View {
             }
             .onAppear {
                 if item.id == viewModel.findedMusics.last?.id {
-                    Task { await viewModel.nextPage() }
+                    Task {
+                        await viewModel.nextPage()
+                    }
                 }
             }
         }
