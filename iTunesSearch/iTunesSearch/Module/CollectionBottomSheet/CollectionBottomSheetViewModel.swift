@@ -9,14 +9,16 @@ import Foundation
 
 @Observable
 final class CollectionBottomSheetViewModel {
+    private let router: Router
     let track: TrackItemModel
     
-    init(track: TrackItemModel) {
+    init(track: TrackItemModel, router: Router) {
+        self.router = router
         self.track = track
     }
     
-    func remove() {
-        
-        
+    func viewAlbum() {
+        router.dismissSheet()
+        router.push(.albumScreen(track))
     }
 }

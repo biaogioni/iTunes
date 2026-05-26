@@ -12,7 +12,7 @@ struct CollectionBottomSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     init(track: TrackItemModel, router: Router) {
-        _viewModel = State(wrappedValue: CollectionBottomSheetViewModel(track: track))
+        _viewModel = State(wrappedValue: CollectionBottomSheetViewModel(track: track, router: router))
     }
 
     var body: some View {
@@ -26,25 +26,32 @@ struct CollectionBottomSheet: View {
                     .foregroundStyle(.text03)
             }
                 .padding(16)
-            AlbumDetailLabel()
+            AlbumDetailLabel() {
+                viewModel.viewAlbum()
+            }
                 .padding(.horizontal, 24)
         }
         .presentationDetents([.height(140)])
         .presentationDragIndicator(.visible)
     }
 }
-
 struct AlbumDetailLabel: View {
+    var onTap: () -> Void
+
     var body: some View {
-        HStack(spacing: 8) {
-            Image(.setlist)
-                .frame(width: 24, height: 24)
-                .padding(.leading, 8)
-                .padding(.vertical, 16)
-            Text("View album")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(.text03)
-            Spacer()
+        Button(action: onTap) {
+            HStack(spacing: 8) {
+                Image(.setlist)
+                    .frame(width: 24, height: 24)
+                    .padding(.leading, 8)
+                    .padding(.vertical, 16)
+                Text("View album")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(.text03)
+                Spacer()
+            }
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
     }
 }

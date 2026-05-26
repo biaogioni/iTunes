@@ -9,20 +9,24 @@ import Foundation
 
 protocol iTunesSearchAPIServicing {
     func searchMusics(term: String, page: Int) async throws -> ITunesSearchResponse
+    func lookupAlbum(collectionId: String) async throws -> ITunesSearchResponse
 }
 
 enum iTunesSearchAPIEndpoints {
-    case find(page: Int, term: String)
+    case search(page: Int, term: String)
+    case lookup(collectionId: String)
     
     private var baseEndpoint: String {
-        return "https://itunes.apple.com/search?"
+        return "https://itunes.apple.com"
     }
     
     private var path: String {
         switch self {
-        case let .find(page, term):
-            return "term=\(term)&entity=song&media=music&limit=20&offset=\(page*20)"
-        } 
+        case let .search(page, term):
+            return "/search?term=\(term)&entity=song&media=music&limit=20&offset=\(page*20)"
+        case let .lookup(collectionId):
+            return "/lookup?id=\(collectionId)&entity=song"
+        }
     }
     
     var endpoint: String {
@@ -38,7 +42,12 @@ nonisolated struct iTunesSearchAPI: iTunesSearchAPIServicing {
     }
     
     func searchMusics(term: String, page: Int) async throws -> ITunesSearchResponse {
-        let urlString = iTunesSearchAPIEndpoints.find(page: page, term: term)
+        let urlString = iTunesSearchAPIEndpoints.search(page: page, term: term)
+        return try await makeGetRequest(requestUrl: urlString.endpoint)
+    }
+    
+    func lookupAlbum(collectionId: String) async throws -> ITunesSearchResponse {
+        let urlString = iTunesSearchAPIEndpoints.lookup(collectionId: collectionId)
         return try await makeGetRequest(requestUrl: urlString.endpoint)
     }
     

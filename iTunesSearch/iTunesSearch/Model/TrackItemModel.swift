@@ -16,6 +16,7 @@ class TrackItemModel {
     var musicCover: URL?
     
     var duration: TimeInterval?
+    var collectionId: Int?
     var collectionName: String?
     var previewUrl: URL?
     
@@ -26,6 +27,7 @@ class TrackItemModel {
          singer: String,
          musicCover: URL?,
          duration: TimeInterval?,
+         collectionId: Int?,
          collectionName: String?,
          previewUrl: URL?,
          insertedAt: Date = .now) {
@@ -34,6 +36,7 @@ class TrackItemModel {
         self.singer = singer
         self.musicCover = musicCover
         self.duration = duration
+        self.collectionId = collectionId
         self.collectionName = collectionName
         self.previewUrl = previewUrl
         self.insertedAt = insertedAt
@@ -51,6 +54,7 @@ extension TrackItemModel {
             singer: item.artistName ?? "Unknown",
             musicCover: item.artworkUrl100,
             duration: item.duration,
+            collectionId: item.collectionId,
             collectionName: item.collectionName,
             previewUrl: item.previewUrl
         )

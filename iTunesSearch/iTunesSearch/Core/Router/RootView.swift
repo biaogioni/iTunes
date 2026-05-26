@@ -24,6 +24,8 @@ struct RootView: View {
                     switch route {
                     case .playScreen(let item):
                         PlayerView(musicInfo: item, router: router)
+                    case .albumScreen(let item):
+                        AlbumView(musicReference: item, router: router)
                     }
                 }
         }
