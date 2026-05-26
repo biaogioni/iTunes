@@ -152,6 +152,22 @@ struct LookupAlbumTests {
         #expect(tracks.count == 12)
     }
 
+    @Test func filterRemovesNonSongEvenWithTrackFields() async throws {
+        let sneaky = """
+        { "wrapperType": "collection", "kind": "album",
+          "trackId": 999, "trackName": "Fake", "artistName": "A", "collectionId": 5000 }
+        """
+        let real = """
+        { "wrapperType": "track", "kind": "song",
+          "trackId": 1, "trackName": "Real", "artistName": "A", "collectionId": 5000 }
+        """
+        let json = Data("{ \"resultCount\": 2, \"results\": [\(sneaky),\(real)] }".utf8)
+        let session = MockURLProtocol.makeSession { (okResponse(for: $0), json) }
+        let sut = iTunesSearchAPI(urlSession: session)
+        let tracks = try await sut.lookupAlbum(collectionId: "5000")
+        #expect(tracks.map(\.id) == ["1"]) // o "999" foi barrado pelo filtro, não pelo init?
+    }
+    
     @Test func sendsCollectionIdInURL() async throws {
         let session = MockURLProtocol.makeSession { req in
             #expect(req.url?.absoluteString.contains("id=5000") == true)
@@ -179,6 +195,8 @@ private func itemJSON(index i: Int, valid: Bool = true) -> String {
     let nameLine = valid ? "\"trackName\": \"Track \(i)\"," : ""
     return """
     {
+        "wrapperType": "track",
+        "kind": "song",
         \(idLine)
         \(nameLine)
         "artistName": "Artist \(i)",

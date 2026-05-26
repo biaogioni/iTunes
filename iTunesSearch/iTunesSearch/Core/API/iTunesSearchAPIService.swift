@@ -60,7 +60,9 @@ nonisolated struct iTunesSearchAPI: iTunesSearchAPIServicing {
     func lookupAlbum(collectionId: String) async throws -> [TrackItemModel] {
         let urlString = iTunesSearchAPIEndpoints.lookup(collectionId: collectionId)
         let response: ITunesSearchResponse = try await makeGetRequest(requestUrl: urlString.endpoint)
-        return response.results.compactMap(TrackItemModel.init)
+        return response.results
+            .filter { $0.wrapperType == .track && $0.kind == .song }
+            .compactMap(TrackItemModel.init)
     }
     
     private func makeGetRequest<T: Decodable>(requestUrl: String) async throws -> T {
