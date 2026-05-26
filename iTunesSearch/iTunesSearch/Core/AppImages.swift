@@ -12,9 +12,6 @@ import SwiftUI
 enum SFSymbol: String {
     case play = "play.fill"
     case pause = "pause.fill"
-    case forward = "forward.fill"
-    case backward = "backward.fill"
-    case repeatTrack = "repeat"
     case chevronLeft = "chevron.left"
     case ellipsis
     case magnifyingglass
@@ -22,7 +19,10 @@ enum SFSymbol: String {
 }
 
 enum AppImage: String {
-    case setlist = "iconSetlist"
+    case setlist = "ic-setlist"
+    case playOnRepeat = "ic-play-on-repeat"
+    case forward = "ic-forward-bar-fill"
+    case backward = "ic-backward-bar-fill"
 }
 
 extension Image {

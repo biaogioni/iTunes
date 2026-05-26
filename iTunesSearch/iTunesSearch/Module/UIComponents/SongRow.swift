@@ -44,7 +44,7 @@ struct SongRow: View {
                     moreOptionsClicked?()
                 } label: {
                     Image(.ellipsis)
-                        .foregroundStyle(Color.element3)
+                        .foregroundStyle(Color.element03)
                         .frame(width: 20, height: 20)
                 }
                 .buttonStyle(.borderless)

@@ -16,40 +16,43 @@ struct PlayerView: View {
  
     var body: some View {
         VStack(spacing: 0) {
-            artwork
-                .padding(.top, 24)
- 
+            Spacer()
+            
+            AsyncImage(url: viewModel.musicInfo.musicCover) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().scaledToFill()
+                default:
+                    Rectangle().fill(.quaternary)
+                }
+            }
+            .aspectRatio(1, contentMode: .fit)
+            .clipShape(.rect(cornerRadius: 28))
+            .padding(.horizontal, 56)
+            
             Spacer()
  
-            trackInfo
-                .padding(.horizontal, 32)
- 
-            progress
-                .padding(.horizontal, 32)
-                .padding(.top, 16)
- 
-            controls
-                .padding(.top, 28)
-                .padding(.bottom, 24)
+            VStack(spacing: 20) {
+                trackInfo
+                progress
+                controls
+            }
+            .padding(.horizontal, 24)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.black)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text(viewModel.musicInfo.collectionName ?? "")
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.element07)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     viewModel.moreInfo()
                 } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(.white)
+                    Image(.ellipsis)
+                        .foregroundStyle(.element07)
                         .frame(width: 36, height: 36)
-                        .background(.white.opacity(0.12), in: .circle)
                 }
             }
         }
@@ -57,46 +60,32 @@ struct PlayerView: View {
         .toolbarColorScheme(.dark, for: .navigationBar)
     }
  
-    private var artwork: some View {
-        AsyncImage(url: viewModel.musicInfo.musicCover) { phase in
-            switch phase {
-            case .success(let image):
-                image.resizable().scaledToFill()
-            default:
-                Rectangle().fill(.quaternary)
-            }
-        }
-        .aspectRatio(1, contentMode: .fit)
-        .frame(maxWidth: .infinity)
-        .clipShape(.rect(cornerRadius: 28))
-        .padding(.horizontal, 56)
-        .shadow(color: .black.opacity(0.4), radius: 20, y: 10)
-    }
- 
     private var trackInfo: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(viewModel.musicInfo.trackName)
-                    .font(.largeTitle.bold())
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
- 
+        VStack(alignment: .leading, spacing: 4) {
+            Text(viewModel.musicInfo.trackName)
+                .font(.system(size: 32, weight: .bold))
+                .foregroundStyle(.text03)
+                .lineLimit(1)
+            
+            HStack(alignment: .center) {
                 Text(viewModel.musicInfo.singer)
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(.text70)
                     .lineLimit(1)
-            }
- 
-            Spacer()
- 
-            Button {
-                viewModel.toggleRepeat()
-            } label: {
-                Image(systemName: "repeat")
-                    .font(.title2)
-//                    .foregroundStyle(viewModel.isRepeating ? .blue : .white)
+                
+                Spacer()
+                
+                Button {
+                    viewModel.toggleRepeat()
+                } label: {
+                    Image(.playOnRepeat)
+                        .scaledToFit()
+                        .frame(width: 22, height: 22)
+                        .foregroundStyle(/*viewModel.isRepeating ? .blue :*/ .element07)
+                }
             }
         }
+ 
     }
     
     private var progress: some View {
@@ -106,54 +95,48 @@ struct PlayerView: View {
                    onEditingChanged: { editing in
                        if !editing { viewModel.seek(to: viewModel.currentTime) }
                    })
-            .tint(.white)
+            .tint(.element07)
  
             HStack {
                 Text(viewModel.currentTime.asPlaybackTime)
                 Spacer()
 //                Text("-" + viewModel.remainingTime.asPlaybackTime)
             }
-            .font(.footnote)
-            .foregroundStyle(.secondary)
+            .font(.system(size: 14, weight: .medium))
+            .foregroundStyle(.text60)
         }
     }
     
     private var controls: some View {
-        HStack(spacing: 48) {
+        HStack(spacing: 28) {
             Button {
                 viewModel.previous()
             } label: {
-                Image(systemName: "backward.fill")
-                    .font(.title)
-                    .foregroundStyle(.white)
+                Image(.backward)
+                    .scaledToFill()
+                    .frame(width: 36, height: 36)
+                    .foregroundStyle(.element07)
             }
  
             Button {
                 viewModel.togglePlay()
             } label: {
-                Image(systemName: viewModel.isPlaying ? "pause.fill" : "play.fill")
+                Image(viewModel.isPlaying ? .pause : .play)
                     .font(.largeTitle)
-                    .foregroundStyle(.white)
-                    .frame(width: 80, height: 80)
-                    .background(.white.opacity(0.18), in: .circle)
+                    .foregroundStyle(.element07)
+                    .frame(width: 72, height: 72)
+                    .background(.clear, in: .circle)
+                    .glassEffect(.regular, in: .circle)
             }
  
             Button {
                 viewModel.next()
             } label: {
-                Image(systemName: "forward.fill")
-                    .font(.title)
-                    .foregroundStyle(.white)
+                Image(.forward)
+                    .scaledToFill()
+                    .frame(width: 36, height: 36)
+                    .foregroundStyle(.element07)
             }
         }
-    }
-}
- 
-private extension Double {
-    /// Formata segundos em "m:ss"
-    var asPlaybackTime: String {
-        guard isFinite, self >= 0 else { return "0:00" }
-        let total = Int(self)
-        return String(format: "%d:%02d", total / 60, total % 60)
     }
 }
