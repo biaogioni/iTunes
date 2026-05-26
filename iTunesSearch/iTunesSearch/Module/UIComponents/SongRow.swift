@@ -11,20 +11,14 @@ struct SongRow: View {
     let trackName: String
     let singer: String
     let coverURL: URL?
+    let coverData: Data?
     
     let hasMoreOptions: Bool
     let moreOptionsClicked: (() -> Void)?
 
     var body: some View {
         HStack(spacing: 16) {
-            AsyncImage(url: coverURL) { phase in
-                switch phase {
-                case .success(let image):
-                    image.resizable()
-                default:
-                    Rectangle().fill(.quaternary)
-                }
-            }
+            CachedImage(data: coverData, url: coverURL)
             .frame(width: 52, height: 52)
             .clipShape(RoundedRectangle(cornerRadius: 8))
 

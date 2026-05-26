@@ -43,9 +43,9 @@ final class SearchViewModel {
         self.context = context
     }
     
-    func didClickOnSong(_ item: TrackItemModel) {
-        save(item)
-        router.push(.playScreen(item))
+    func didClickOnSong(_ index: Int) async {
+        await save(displayedTracks[index] )
+        router.push(.playScreen(index, displayedTracks))
     }
     
     func didClickInMoreInfo(musicInfo: TrackItemModel) {
@@ -74,14 +74,19 @@ final class SearchViewModel {
         }
     }
     
-    func save(_ item: TrackItemModel) {
+    func save(_ item: TrackItemModel) async {
         let id = String(item.id)
         let descriptor = FetchDescriptor<TrackItemModel>(
             predicate: #Predicate { $0.id == id }
         )
         
+        if let url = item.musicCover {
+            item.coverData = try? await URLSession.shared.data(from: url).0
+        }
+        
         if let existing = try? context.fetch(descriptor).first {
             existing.insertedAt = .now
+            existing.coverData = item.coverData
         } else {
             context.insert(item)
         }

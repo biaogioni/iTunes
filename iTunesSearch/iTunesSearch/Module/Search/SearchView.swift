@@ -26,18 +26,22 @@ struct SearchView: View {
                 }
             }
         }
-        List(viewModel.displayedTracks) { item in
+        List(Array(viewModel.displayedTracks.enumerated()), id: \.element.id) { index, item in
             SongRow(trackName: item.trackName,
                     singer: item.singer,
                     coverURL: item.musicCover,
+                    coverData: item.coverData,
                     hasMoreOptions: true) {
                 viewModel.didClickInMoreInfo(musicInfo: item)
             }
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
             .contentShape(Rectangle())
             .onTapGesture {
-                viewModel.didClickOnSong(item)
+                Task {
+                    await viewModel.didClickOnSong(index)
+                }
             }
             .onAppear {
                 if item.id == viewModel.findedMusics.last?.id {

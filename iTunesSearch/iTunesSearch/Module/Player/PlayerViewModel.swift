@@ -13,52 +13,94 @@ import Observation
 @MainActor
 @Observable
 final class PlayerViewModel {
-    var musicInfo: TrackItemModel
-    var currentTime: Double = 0
-    var isPlaying = false
-
-    private let player: AVPlayer
-    
-    private let api: iTunesSearchAPI
-    private let router: Router
-
-    init(musicInfo: TrackItemModel, api: iTunesSearchAPI = iTunesSearchAPI(), router: Router) {
-        self.musicInfo = musicInfo
-        self.api = api
-        self.router = router
-        
-        player = AVPlayer(url: musicInfo.previewUrl!)
-
-        let interval = CMTime(seconds: 0.5, preferredTimescale: 600)
-        player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
-            self?.currentTime = time.seconds
+    private var musicPlaylist: [TrackItemModel]
+    private var currentMusicIndex: Int {
+        didSet {
+            playingMusic = musicPlaylist[safe: currentMusicIndex]
+            loadCurrentTrack()
         }
     }
     
-    func buildMusicList() {
-        
+    var currentTime: Double = 0
+    var isPlaying = false
+
+    private var player: AVPlayer?
+    
+    private let api: iTunesSearchAPI
+    private let router: Router
+    
+    var playingMusic: TrackItemModel?
+    
+    var canGoNext: Bool {
+        currentMusicIndex < musicPlaylist.count - 1
+    }
+
+    var canGoPrevious: Bool {
+        currentMusicIndex > 0
+    }
+    
+    var isRepeating: Bool = false
+    
+    init(currentMusicIndex: Int, musicPlaylist: [TrackItemModel], api: iTunesSearchAPI = iTunesSearchAPI(), router: Router) {
+        self.currentMusicIndex = currentMusicIndex
+        self.musicPlaylist = musicPlaylist
+        self.playingMusic = musicPlaylist[safe: currentMusicIndex]
+        self.api = api
+        self.router = router
+    }
+    
+    private func loadCurrentTrack() {
+        guard let preview = playingMusic?.previewUrl else { return }
+
+        player?.pause()
+        player = AVPlayer(url: preview)
+        currentTime = 0
+        addTimeObserver()
+
+        if isPlaying {
+            player?.play()
+        }
+    }
+
+    private func addTimeObserver() {
+        let interval = CMTime(seconds: 0.5, preferredTimescale: 600)
+        player?.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
+            MainActor.assumeIsolated {
+                self?.currentTime = time.seconds
+            }
+        }
+    }
+
+    func setupPlayer() {
+        loadCurrentTrack()
     }
     
     func moreInfo() {
-        router.presentSheet(musicInfo)
+        guard let playingMusic else { return }
+        router.presentSheet(playingMusic)
     }
     
-    func didClickOnSong(_ item: TrackItemModel, into context: ModelContext) {
-//        save(item, into: context)
-//        router.push(.playScreen(item))
-    }
-
     func togglePlay() {
-        isPlaying ? player.pause() : player.play()
+        isPlaying ? player?.pause() : player?.play()
         isPlaying.toggle()
     }
 
     func seek(to seconds: Double) {
-        player.seek(to: CMTime(seconds: seconds, preferredTimescale: 600))
+        player?.seek(to: CMTime(seconds: seconds, preferredTimescale: 600))
     }
 
-    func next() {}
-    func previous() {}
-    func toggleRepeat() {}
+    func next() {
+        guard currentMusicIndex < musicPlaylist.count - 1 else { return }
+        currentMusicIndex += 1
+    }
+    
+    func previous() {
+        guard currentMusicIndex > 0 else { return }
+        currentMusicIndex -= 1
+    }
+    
+    func toggleRepeat() {
+        isRepeating = !isRepeating
+    }
     
 }

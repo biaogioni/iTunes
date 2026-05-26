@@ -22,8 +22,8 @@ struct RootView: View {
             SearchView(context: context, router: router)
                 .navigationDestination(for: Route.self) { route in
                     switch route {
-                    case .playScreen(let item):
-                        PlayerView(musicInfo: item, router: router)
+                    case .playScreen(let index, let musicPlaylist):
+                        PlayerView(currentMusicIndex: index, musicPlaylist: musicPlaylist, router: router)
                     case .albumScreen(let item):
                         AlbumView(musicReference: item, router: router)
                     }

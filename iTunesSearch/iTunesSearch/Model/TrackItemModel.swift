@@ -13,7 +13,9 @@ class TrackItemModel {
     @Attribute(.unique) var id: String
     var trackName: String
     var singer: String
+    
     var musicCover: URL?
+    @Attribute(.externalStorage) var coverData: Data?
     
     var duration: TimeInterval?
     var collectionId: Int?
@@ -52,11 +54,17 @@ extension TrackItemModel {
             id: String(trackId),
             trackName: trackName,
             singer: item.artistName ?? "Unknown",
-            musicCover: item.artworkUrl100,
+            musicCover: Self.resizeCover(from: item.artworkUrl100, size: 1000),
             duration: item.duration,
             collectionId: item.collectionId,
             collectionName: item.collectionName,
             previewUrl: item.previewUrl
         )
     }
+    
+    private static func resizeCover(from url: URL?, size: Int) -> URL? {
+       guard let base = url?.absoluteString else { return nil }
+       return URL(string: base.replacingOccurrences(of: "100x100bb",
+                                                     with: "\(size)x\(size)bb"))
+   }
 }

@@ -16,14 +16,7 @@ struct AlbumView: View {
     }
 
     var body: some View {
-        AsyncImage(url: viewModel.musicReference.musicCover) { phase in
-            switch phase {
-            case .success(let image):
-                image.resizable().scaledToFill()
-            default:
-                Rectangle().fill(.quaternary)
-            }
-        }
+        CachedImage(data: viewModel.musicReference.coverData, url: viewModel.musicReference.musicCover)
         .frame(width: 120, height: 120)
         .aspectRatio(1, contentMode: .fit)
         .clipShape(.rect(cornerRadius: 28))
@@ -38,10 +31,11 @@ struct AlbumView: View {
         }
             .padding(16)
         
-        List(viewModel.albumSongs) { item in
+        List(viewModel.albumSongs.enumerated(), id: \.element.id) { index, item in
             SongRow(trackName: item.trackName,
                     singer: item.singer,
                     coverURL: item.musicCover,
+                    coverData: item.coverData,
                     hasMoreOptions: false,
                     moreOptionsClicked: nil
             )
@@ -50,7 +44,7 @@ struct AlbumView: View {
             .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
             .contentShape(Rectangle())
             .onTapGesture {
-                viewModel.didClickOnSong(item)
+                viewModel.didClickOnSong(index)
             }
         }
         .listStyle(.plain)

@@ -11,25 +11,18 @@ import SwiftData
 struct PlayerView: View {
     @State private var viewModel: PlayerViewModel
     
-    init(musicInfo: TrackItemModel, router: Router) {
-        _viewModel = State(wrappedValue: PlayerViewModel(musicInfo: musicInfo, router: router))
+    init(currentMusicIndex: Int, musicPlaylist: [TrackItemModel], router: Router) {
+        _viewModel = State(wrappedValue: PlayerViewModel(currentMusicIndex: currentMusicIndex, musicPlaylist: musicPlaylist, router: router))
     }
  
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
             
-            AsyncImage(url: viewModel.musicInfo.musicCover) { phase in
-                switch phase {
-                case .success(let image):
-                    image.resizable().scaledToFill()
-                default:
-                    Rectangle().fill(.quaternary)
-                }
-            }
-            .aspectRatio(1, contentMode: .fit)
-            .clipShape(.rect(cornerRadius: 28))
-            .padding(.horizontal, 56)
+            CachedImage(data: viewModel.playingMusic?.coverData, url: viewModel.playingMusic?.musicCover)
+                .aspectRatio(1, contentMode: .fit)
+                .clipShape(.rect(cornerRadius: 28))
+                .padding(.horizontal, 56)
             
             Spacer()
  
@@ -43,7 +36,7 @@ struct PlayerView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text(viewModel.musicInfo.collectionName ?? "")
+                Text(viewModel.playingMusic?.collectionName ?? "")
                     .font(.headline)
                     .foregroundStyle(.element07)
             }
@@ -59,17 +52,21 @@ struct PlayerView: View {
         }
         .toolbarBackground(.black, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        
+        .task {
+            viewModel.setupPlayer()
+        }
     }
  
     private var trackInfo: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(viewModel.musicInfo.trackName)
+            Text(viewModel.playingMusic?.trackName ?? "")
                 .font(.system(size: 32, weight: .bold))
                 .foregroundStyle(.text03)
                 .lineLimit(1)
             
             HStack(alignment: .center) {
-                Text(viewModel.musicInfo.singer)
+                Text(viewModel.playingMusic?.singer ?? "")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(.text70)
                     .lineLimit(1)
@@ -82,7 +79,7 @@ struct PlayerView: View {
                     Image(.playOnRepeat)
                         .scaledToFit()
                         .frame(width: 22, height: 22)
-                        .foregroundStyle(/*viewModel.isRepeating ? .blue :*/ .element07)
+                        .foregroundStyle(viewModel.isRepeating ? .element03 : .element07)
                 }
             }
         }
@@ -92,7 +89,7 @@ struct PlayerView: View {
     private var progress: some View {
         VStack(spacing: 6) {
             Slider(value: $viewModel.currentTime,
-                   in: 0...(viewModel.musicInfo.duration ?? 30),
+                   in: 0...(viewModel.playingMusic?.duration ?? 30),
                    onEditingChanged: { editing in
                        if !editing { viewModel.seek(to: viewModel.currentTime) }
                    })
@@ -118,7 +115,9 @@ struct PlayerView: View {
                     .frame(width: 36, height: 36)
                     .foregroundStyle(.element07)
             }
- 
+            .opacity(viewModel.canGoPrevious ? 1 : 0.3)
+            .disabled(!viewModel.canGoPrevious)
+
             Button {
                 viewModel.togglePlay()
             } label: {
@@ -138,6 +137,8 @@ struct PlayerView: View {
                     .frame(width: 36, height: 36)
                     .foregroundStyle(.element07)
             }
+            .opacity(viewModel.canGoNext ? 1 : 0.3)
+            .disabled(!viewModel.canGoNext)
         }
     }
 }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum Route: Hashable {
-    case playScreen(TrackItemModel)
+    case playScreen(Int, [TrackItemModel])
     case albumScreen(TrackItemModel)
 }
 

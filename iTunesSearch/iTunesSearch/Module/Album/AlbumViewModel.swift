@@ -24,8 +24,8 @@ final class AlbumViewModel {
         self.musicReference = musicReference
     }
     
-    func didClickOnSong(_ item: TrackItemModel) {
-        router.push(.playScreen(item))
+    func didClickOnSong(_ item: Int) {
+        router.push(.playScreen(item, albumSongs))
     }
     
     func loadPage() async {
