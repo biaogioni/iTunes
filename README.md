@@ -14,4 +14,4 @@ MVVM, with a protocol-based network layer and a repository layer so the API impl
 
 - Instructions to run the project
 
-Just clone and build. Open the project in Xcode 16+, select an iOS 17+ simulator (or device), and run. No API keys or extra setup required, since the iTunes Search API is public.
+Just clone and build. Open the project in Xcode 16+, select an iOS 26+ simulator, and run. No API keys or extra setup required, since the iTunes Search API is public.
