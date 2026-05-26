@@ -11,8 +11,8 @@ import SwiftData
 struct AlbumView: View {
     @State private var viewModel: AlbumViewModel
     
-    init(musicReference: TrackItemModel, router: Router) {
-        _viewModel = State(wrappedValue: AlbumViewModel(musicReference: musicReference, router: router))
+    init(musicReference: TrackItemModel, context: ModelContext, router: Router) {
+        _viewModel = State(wrappedValue: AlbumViewModel(context: context, musicReference: musicReference, router: router))
     }
 
     var body: some View {
@@ -48,9 +48,10 @@ struct AlbumView: View {
             }
         }
         .listStyle(.plain)
-        .onAppear {
+        .errorAlert(isPresented: $viewModel.showErrorAlert)
+        .task {
             Task {
-                await viewModel.loadPage()
+                await viewModel.loadAlbum()
             }
         }
     }

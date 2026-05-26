@@ -24,6 +24,9 @@ class TrackItemModel {
     
     var insertedAt: Date
     
+    var wasPlayed: Bool = false     
+    var album: AlbumModel?
+    
     init(id: String,
          trackName: String,
          singer: String,
@@ -32,7 +35,9 @@ class TrackItemModel {
          collectionId: Int?,
          collectionName: String?,
          previewUrl: URL?,
-         insertedAt: Date = .now) {
+         insertedAt: Date = .now,
+         wasPlayed: Bool = false,
+         album: AlbumModel? = nil) {
         self.id = id
         self.trackName = trackName
         self.singer = singer

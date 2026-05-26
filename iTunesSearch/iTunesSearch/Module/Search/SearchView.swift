@@ -75,6 +75,7 @@ struct SearchView: View {
         .onAppear {
             viewModel.loadRecents()
         }
+        .errorAlert(isPresented: $viewModel.showErrorAlert)
     }
 }
 

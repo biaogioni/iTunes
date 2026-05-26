@@ -27,7 +27,7 @@ struct RootView: View {
                         case .playScreen(let index, let musicPlaylist):
                             PlayerView(currentMusicIndex: index, musicPlaylist: musicPlaylist, router: router)
                         case .albumScreen(let item):
-                            AlbumView(musicReference: item, router: router)
+                            AlbumView(musicReference: item, context: context, router: router)
                         }
                     }
             }

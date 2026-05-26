@@ -40,6 +40,8 @@ final class SearchViewModel {
         !searchText.isEmpty
     }
     
+    var showErrorAlert = false
+    
     init(api: iTunesSearchAPI = iTunesSearchAPI(), context: ModelContext, router: Router) {
         self.api = api
         self.router = router
@@ -71,6 +73,7 @@ final class SearchViewModel {
     
     func loadRecents() {
         let descriptor = FetchDescriptor<TrackItemModel>(
+            predicate: #Predicate { $0.wasPlayed == true },
             sortBy: [SortDescriptor(\.insertedAt, order: .reverse)]
         )
         
@@ -78,7 +81,6 @@ final class SearchViewModel {
             recentTracks = try context.fetch(descriptor)
         } catch {
             recentTracks = []
-            // error
         }
     }
     
@@ -95,7 +97,9 @@ final class SearchViewModel {
         if let existing = try? context.fetch(descriptor).first {
             existing.insertedAt = .now
             existing.coverData = item.coverData
+            existing.wasPlayed = true
         } else {
+            item.wasPlayed = true
             context.insert(item)
         }
         
@@ -134,7 +138,7 @@ final class SearchViewModel {
             findedMusics.append(contentsOf: musics)
             hasMore = response.hasMore
         } catch {
-            print("Search error: \(error)")
+            showErrorAlert = true
         }
     }
 }
