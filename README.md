@@ -1,4 +1,5 @@
 Project Information
+
 ○ Solution adopted
 
 An iOS app to search songs through the Apple iTunes Search API based on user text input, built with an offline-first experience. It covers a splash screen, a paginated search/home screen with a recently-played section, a player (song details), an album screen, and a more-options bottom sheet.
