@@ -111,5 +111,4 @@ final class PlayerViewModel {
     func toggleRepeat() {
         isRepeating = !isRepeating
     }
-    
 }

@@ -167,7 +167,7 @@ struct LookupAlbumTests {
         MockURLProtocol.requestHandler = { (okResponse(for: $0), Data("not json".utf8)) }
         let sut = iTunesSearchAPI(urlSession: makeMockSession())
         await #expect(throws: (any Error).self) {
-            try await sut.lookupAlbum(collectionId: "5000")
+            _ = try await sut.lookupAlbum(collectionId: "5000")
         }
     }
 }

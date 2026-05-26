@@ -12,8 +12,14 @@ enum Route: Hashable {
     case albumScreen(TrackItemModel)
 }
 
+protocol Routing {
+    func push(_ route: Route)
+    func presentSheet(_ track: TrackItemModel)
+    func dismissSheet()
+}
+
 @Observable
-final class Router {
+final class Router: Routing {
     var path = NavigationPath()
     var presentedSheet: TrackItemModel?
 

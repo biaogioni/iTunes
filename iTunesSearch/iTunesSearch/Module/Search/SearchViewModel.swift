@@ -11,8 +11,8 @@ import SwiftData
 @MainActor
 @Observable
 final class SearchViewModel {
-    private let api: iTunesSearchAPI
-    private let router: Router
+    private let api: iTunesSearchAPIServicing
+    private let router: Routing
     private let context: ModelContext
     
     private var currentSearchText = ""
@@ -42,7 +42,7 @@ final class SearchViewModel {
     
     var showErrorAlert = false
     
-    init(api: iTunesSearchAPI = iTunesSearchAPI(), context: ModelContext, router: Router) {
+    init(api: iTunesSearchAPIServicing = iTunesSearchAPI(), context: ModelContext, router: Routing) {
         self.api = api
         self.router = router
         self.context = context

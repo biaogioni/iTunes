@@ -13,7 +13,7 @@ struct SearchView: View {
     @State private var isSearching = true
     @FocusState private var searchFieldFocused: Bool
     
-    init(context: ModelContext, router: Router) {
+    init(context: ModelContext, router: Routing) {
         _viewModel = State(wrappedValue: SearchViewModel(context: context, router: router))
     }
 
