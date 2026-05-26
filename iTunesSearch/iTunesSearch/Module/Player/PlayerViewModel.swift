@@ -31,6 +31,11 @@ final class PlayerViewModel {
     
     var playingMusic: TrackItemModel?
     
+    var remainingTime: Double? {
+        guard let duration = playingMusic?.duration else { return nil }
+        return max(duration - currentTime, 0)
+    }
+    
     var canGoNext: Bool {
         currentMusicIndex < musicPlaylist.count - 1
     }
@@ -53,6 +58,10 @@ final class PlayerViewModel {
         guard let preview = playingMusic?.previewUrl else { return }
 
         player?.pause()
+        
+        // Preview playback requires network (remote stream); offline
+        // detection will be here in future interactions. Failures surface
+        // through the error alert rather than failing silently.
         player = AVPlayer(url: preview)
         currentTime = 0
         addTimeObserver()

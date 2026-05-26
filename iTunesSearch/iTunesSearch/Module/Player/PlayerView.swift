@@ -98,7 +98,8 @@ struct PlayerView: View {
             HStack {
                 Text(viewModel.currentTime.asPlaybackTime)
                 Spacer()
-//                Text("-" + viewModel.remainingTime.asPlaybackTime)
+                Text("-" + (viewModel.remainingTime?.asPlaybackTime ?? ""))
+                    .opacity(viewModel.remainingTime == nil ? 0 : 1)
             }
             .font(.system(size: 14, weight: .medium))
             .foregroundStyle(.text60)
