@@ -36,6 +36,10 @@ final class SearchViewModel {
         }
     }
     
+    var canRefresh: Bool {
+        !searchText.isEmpty
+    }
+    
     init(api: iTunesSearchAPI = iTunesSearchAPI(), context: ModelContext, router: Router) {
         self.api = api
         self.router = router
@@ -58,6 +62,11 @@ final class SearchViewModel {
             guard !Task.isCancelled else { return }
             await search()
         }
+    }
+    
+    func refresh() async {
+        hasMore = true
+        await search()
     }
     
     func loadRecents() {

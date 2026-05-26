@@ -67,8 +67,26 @@ struct SearchView: View {
                 }
             }
         }
+        .modifier(ConditionalRefresh(isActive: viewModel.canRefresh) {
+            Task {
+                await viewModel.refresh()
+            }
+        })
         .onAppear {
             viewModel.loadRecents()
+        }
+    }
+}
+
+struct ConditionalRefresh: ViewModifier {
+    let isActive: Bool
+    let action: () async -> Void
+
+    func body(content: Content) -> some View {
+        if isActive {
+            content.refreshable { await action() }
+        } else {
+            content
         }
     }
 }
