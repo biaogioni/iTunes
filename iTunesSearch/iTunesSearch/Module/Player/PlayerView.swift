@@ -11,7 +11,7 @@ import SwiftData
 struct PlayerView: View {
     @State private var viewModel: PlayerViewModel
     
-    init(currentMusicIndex: Int, musicPlaylist: [TrackItemModel], router: Router) {
+    init(currentMusicIndex: Int, musicPlaylist: [TrackItemModel], router: Routing) {
         _viewModel = State(wrappedValue: PlayerViewModel(currentMusicIndex: currentMusicIndex, musicPlaylist: musicPlaylist, router: router))
     }
  

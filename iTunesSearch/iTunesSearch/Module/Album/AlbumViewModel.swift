@@ -11,8 +11,8 @@ import SwiftData
 @MainActor
 @Observable
 final class AlbumViewModel {
-    private let api: iTunesSearchAPI
-    private let router: Router
+    private let api: iTunesSearchAPIServicing
+    private let router: Routing
     private let context: ModelContext
 
     private var isLoading = false
@@ -21,8 +21,10 @@ final class AlbumViewModel {
     
     var showErrorAlert = false
 
-    init(api: iTunesSearchAPI = iTunesSearchAPI(), context: ModelContext,
-         musicReference: TrackItemModel, router: Router) {
+    init(api: iTunesSearchAPIServicing = iTunesSearchAPI(),
+         context: ModelContext,
+         musicReference: TrackItemModel,
+         router: Routing) {
         self.api = api
         self.router = router
         self.context = context

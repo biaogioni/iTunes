@@ -195,7 +195,6 @@ struct PersistenceTests {
 @MainActor
 @Suite(.serialized)
 struct NavigationTests {
-
     @Test func didClickOnSongSavesAndPushes() async throws {
         let (vm, _, router, context) = try makeSUT()
         vm.findedMusics = [makeTrack(id: "1")]
@@ -204,7 +203,7 @@ struct NavigationTests {
         await vm.didClickOnSong(0)
 
         guard case let .playScreen(index, tracks)? = router.pushedRoutes.first else {
-            Issue.record("Esperava push de .playScreen"); return
+            Issue.record("Wait .playScreen push"); return
         }
         #expect(index == 0)
         #expect(tracks.count == 1)
@@ -224,7 +223,6 @@ struct NavigationTests {
 @MainActor
 @Suite(.serialized)
 struct DebounceTests {
-
     @Test func searchTextTriggersSearchAfterDelay() async throws {
         let (vm, api, _, _) = try makeSUT()
         vm.searchText = "queen"

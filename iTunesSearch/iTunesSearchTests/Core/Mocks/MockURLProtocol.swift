@@ -10,13 +10,27 @@ import Testing
 @testable import iTunesSearch
 
 final class MockURLProtocol: URLProtocol {
-    nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+    nonisolated(unsafe) private static var handlers: [String: (URLRequest) throws -> (HTTPURLResponse, Data)] = [:]
+    private static let lock = NSLock()
+
+    static func makeSession(handler: @escaping (URLRequest) throws -> (HTTPURLResponse, Data)) -> URLSession {
+        let id = UUID().uuidString
+        lock.withLock { handlers[id] = handler }
+
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+        config.httpAdditionalHeaders = ["X-Mock-Handler-ID": id]
+        return URLSession(configuration: config)
+    }
 
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
     override func startLoading() {
-        guard let handler = Self.requestHandler else {
+        let id = request.value(forHTTPHeaderField: "X-Mock-Handler-ID") ?? ""
+        let handler = Self.lock.withLock { Self.handlers[id] }
+
+        guard let handler else {
             client?.urlProtocol(self, didFailWithError: URLError(.unknown)); return
         }
         do {
@@ -28,5 +42,6 @@ final class MockURLProtocol: URLProtocol {
             client?.urlProtocol(self, didFailWithError: error)
         }
     }
+
     override func stopLoading() {}
 }

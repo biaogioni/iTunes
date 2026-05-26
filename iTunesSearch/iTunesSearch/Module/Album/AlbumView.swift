@@ -11,7 +11,7 @@ import SwiftData
 struct AlbumView: View {
     @State private var viewModel: AlbumViewModel
     
-    init(musicReference: TrackItemModel, context: ModelContext, router: Router) {
+    init(musicReference: TrackItemModel, context: ModelContext, router: Routing) {
         _viewModel = State(wrappedValue: AlbumViewModel(context: context, musicReference: musicReference, router: router))
     }
 

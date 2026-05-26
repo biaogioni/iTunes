@@ -23,95 +23,95 @@ struct EndpointTests {
 }
 
 @MainActor
-@Suite(.serialized)
 struct SearchMusicsTests {
     @Test func decodesFirstPage() async throws {
-        MockURLProtocol.requestHandler = { (okResponse(for: $0), makeITunesJSON(validCount: 20)) }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let session = MockURLProtocol.makeSession { (okResponse(for: $0), makeITunesJSON(validCount: 20)) }
+        let sut = iTunesSearchAPI(urlSession: session)
         let result = try await sut.searchMusics(term: "test", page: 1)
         #expect(result.items.count == 20)
     }
 
     @Test func hasMoreWhenFullPageUnderCap() async throws {
-        MockURLProtocol.requestHandler = { (okResponse(for: $0), makeITunesJSON(validCount: 20)) }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let session = MockURLProtocol.makeSession { (okResponse(for: $0), makeITunesJSON(validCount: 20)) }
+        let sut = iTunesSearchAPI(urlSession: session)
         let result = try await sut.searchMusics(term: "test", page: 1)
         #expect(result.hasMore == true)
     }
 
     @Test func noMoreOnPartialPage() async throws {
-        MockURLProtocol.requestHandler = { (okResponse(for: $0), makeITunesJSON(validCount: 15)) }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let session = MockURLProtocol.makeSession { (okResponse(for: $0), makeITunesJSON(validCount: 15)) }
+        let sut = iTunesSearchAPI(urlSession: session)
         let result = try await sut.searchMusics(term: "test", page: 1)
         #expect(result.hasMore == false)
         #expect(result.items.count == 15)
     }
 
     @Test func noMoreAtTwoHundredCap() async throws {
-        MockURLProtocol.requestHandler = { (okResponse(for: $0), makeITunesJSON(validCount: 200)) }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let session = MockURLProtocol.makeSession { (okResponse(for: $0), makeITunesJSON(validCount: 200)) }
+        let sut = iTunesSearchAPI(urlSession: session)
         let result = try await sut.searchMusics(term: "test", page: 10)
         #expect(result.hasMore == false)
     }
 
     @Test func fakePaginationDropsPreviousPages() async throws {
         // page 2 -> dropFirst(20) de 40 itens -> 20
-        MockURLProtocol.requestHandler = { (okResponse(for: $0), makeITunesJSON(validCount: 40)) }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let session = MockURLProtocol.makeSession { (okResponse(for: $0), makeITunesJSON(validCount: 40)) }
+        let sut = iTunesSearchAPI(urlSession: session)
         let result = try await sut.searchMusics(term: "test", page: 2)
         #expect(result.items.count == 20)
         #expect(result.hasMore == true)
     }
 
     @Test func invalidItemsAreDroppedBeforeHasMoreCalc() async throws {
-        MockURLProtocol.requestHandler = { (okResponse(for: $0), makeITunesJSON(validCount: 20, invalidCount: 5)) }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let session = MockURLProtocol.makeSession { (okResponse(for: $0), makeITunesJSON(validCount: 20, invalidCount: 5)) }
+        let sut = iTunesSearchAPI(urlSession: session)
         let result = try await sut.searchMusics(term: "test", page: 1)
         #expect(result.items.count == 20)
         #expect(result.hasMore == true)
     }
 
     @Test func emptyResults() async throws {
-        MockURLProtocol.requestHandler = { (okResponse(for: $0), makeITunesJSON(validCount: 0)) }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let session = MockURLProtocol.makeSession { (okResponse(for: $0), makeITunesJSON(validCount: 0)) }
+        let sut = iTunesSearchAPI(urlSession: session)
         let result = try await sut.searchMusics(term: "test", page: 1)
         #expect(result.items.isEmpty)
         #expect(result.hasMore == false)
     }
 
     @Test func throwsOnInvalidJSON() async throws {
-        MockURLProtocol.requestHandler = { (okResponse(for: $0), Data("{ broken".utf8)) }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let session = MockURLProtocol.makeSession { (okResponse(for: $0), Data("{ broken".utf8)) }
+        let sut = iTunesSearchAPI(urlSession: session)
         await #expect(throws: (any Error).self) {
             try await sut.searchMusics(term: "test", page: 1)
         }
     }
 
     @Test func propagatesNetworkError() async throws {
-        MockURLProtocol.requestHandler = { _ in throw URLError(.notConnectedToInternet) }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let session = MockURLProtocol.makeSession { _ in throw URLError(.notConnectedToInternet) }
+        let sut = iTunesSearchAPI(urlSession: session)
         await #expect(throws: URLError.self) {
             try await sut.searchMusics(term: "test", page: 1)
         }
     }
 
     @Test func sendsTermInURL() async throws {
-        MockURLProtocol.requestHandler = { req in
-            #expect(req.url?.absoluteString.contains("term=queen") == true)
+        nonisolated(unsafe) var capturedURL: URL?
+        let session = MockURLProtocol.makeSession { req in
+            capturedURL = req.url
             return (okResponse(for: req), makeITunesJSON(validCount: 1))
         }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let sut = iTunesSearchAPI(urlSession: session)
         _ = try await sut.searchMusics(term: "queen", page: 1)
+
+        #expect(capturedURL?.absoluteString.contains("term=queen") == true)
     }
 }
 
 @MainActor
-@Suite(.serialized)
 struct MappingTests {
-
     @Test func mapsCoreFields() async throws {
-        MockURLProtocol.requestHandler = { (okResponse(for: $0), makeITunesJSON(validCount: 1)) }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let session = MockURLProtocol.makeSession { (okResponse(for: $0), makeITunesJSON(validCount: 1)) }
+        let sut = iTunesSearchAPI(urlSession: session)
         let item = try #require(try await sut.searchMusics(term: "x", page: 1).items.first)
 
         #expect(item.id == "1000")
@@ -123,8 +123,8 @@ struct MappingTests {
     }
 
     @Test func resizesCoverArtworkTo1000() async throws {
-        MockURLProtocol.requestHandler = { (okResponse(for: $0), makeITunesJSON(validCount: 1)) }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let session = MockURLProtocol.makeSession { (okResponse(for: $0), makeITunesJSON(validCount: 1)) }
+        let sut = iTunesSearchAPI(urlSession: session)
         let item = try #require(try await sut.searchMusics(term: "x", page: 1).items.first)
         #expect(item.musicCover?.absoluteString == "https://example.com/img/1000x1000bb.jpg")
     }
@@ -135,8 +135,8 @@ struct MappingTests {
             { "trackId": 1, "trackName": "Solo", "artworkUrl100": null }
         ]}
         """.utf8)
-        MockURLProtocol.requestHandler = { (okResponse(for: $0), json) }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let session = MockURLProtocol.makeSession { (okResponse(for: $0), json) }
+        let sut = iTunesSearchAPI(urlSession: session)
         let item = try #require(try await sut.searchMusics(term: "x", page: 1).items.first)
         #expect(item.singer == "Unknown")
         #expect(item.musicCover == nil)
@@ -144,38 +144,30 @@ struct MappingTests {
 }
 
 @MainActor
-@Suite(.serialized)
 struct LookupAlbumTests {
-
     @Test func returnsAllValidTracks() async throws {
-        MockURLProtocol.requestHandler = { (okResponse(for: $0), makeITunesJSON(validCount: 12, invalidCount: 3)) }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let session = MockURLProtocol.makeSession { (okResponse(for: $0), makeITunesJSON(validCount: 12, invalidCount: 3)) }
+        let sut = iTunesSearchAPI(urlSession: session)
         let tracks = try await sut.lookupAlbum(collectionId: "5000")
-        #expect(tracks.count == 12) // os 3 inválidos foram descartados
+        #expect(tracks.count == 12)
     }
 
     @Test func sendsCollectionIdInURL() async throws {
-        MockURLProtocol.requestHandler = { req in
+        let session = MockURLProtocol.makeSession { req in
             #expect(req.url?.absoluteString.contains("id=5000") == true)
             return (okResponse(for: req), makeITunesJSON(validCount: 1))
         }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let sut = iTunesSearchAPI(urlSession: session)
         _ = try await sut.lookupAlbum(collectionId: "5000")
     }
 
     @Test func throwsOnDecodingFailure() async throws {
-        MockURLProtocol.requestHandler = { (okResponse(for: $0), Data("not json".utf8)) }
-        let sut = iTunesSearchAPI(urlSession: makeMockSession())
+        let session = MockURLProtocol.makeSession { (okResponse(for: $0), Data("not json".utf8)) }
+        let sut = iTunesSearchAPI(urlSession: session)
         await #expect(throws: (any Error).self) {
             _ = try await sut.lookupAlbum(collectionId: "5000")
         }
     }
-}
-
-private func makeMockSession() -> URLSession {
-    let config = URLSessionConfiguration.ephemeral
-    config.protocolClasses = [MockURLProtocol.self]
-    return URLSession(configuration: config)
 }
 
 private func okResponse(for request: URLRequest) -> HTTPURLResponse {

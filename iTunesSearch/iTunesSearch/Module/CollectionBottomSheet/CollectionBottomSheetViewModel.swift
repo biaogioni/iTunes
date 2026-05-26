@@ -9,10 +9,10 @@ import Foundation
 
 @Observable
 final class CollectionBottomSheetViewModel {
-    private let router: Router
+    private let router: Routing
     let track: TrackItemModel
     
-    init(track: TrackItemModel, router: Router) {
+    init(track: TrackItemModel, router: Routing) {
         self.router = router
         self.track = track
     }
